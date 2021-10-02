@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as satellite from 'satellite.js';
 
+import atmosphereVertexShader from './shaders/atmosphereVertex.glsl'
+import atmosphereFragmentShader from './shaders/atmosphereFragment.glsl'
 import vertexShader from './shaders/vertex.glsl'
 import fragmentShader from './shaders/fragment.glsl'
 
@@ -41,6 +43,20 @@ const sphere = new THREE.Mesh(
 )
 
 scene.add(sphere)
+
+const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 50, 50),
+    new THREE.ShaderMaterial({
+        vertexShader: atmosphereVertexShader,
+        fragmentShader: atmosphereFragmentShader,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide
+    })
+)
+
+atmosphere.scale.set(1.1, 1.1, 1.1)
+
+scene.add(atmosphere)
 camera.position.z = 20
 
 function calcPosFromLatLonRad(lat, lon, height) {
