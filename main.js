@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as satellite from 'satellite.js';
 
+import vertexShader from './shaders/vertex.glsl'
+import fragmentShader from './shaders/fragment.glsl'
+console.log(fragmentShader)
 const scene = new THREE.Scene()
 const camera = new THREE.
 PerspectiveCamera(
@@ -24,8 +27,14 @@ const texture = new THREE.TextureLoader().load('../img/earth.jpg');
 
 const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(1, 30, 30),
-    new THREE.MeshBasicMaterial({
-        map: texture
+    new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+            globeTexture: {
+                value: texture
+            }
+        }
     })
 )
 
