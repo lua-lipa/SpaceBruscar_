@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 
+import vertexShader from './shaders/vertex.glsl'
+import fragmentShader from './shaders/fragment.glsl'
+console.log(fragmentShader)
 const scene = new THREE.Scene()
 const camera = new THREE.
     PerspectiveCamera(
@@ -20,8 +23,14 @@ const texture = new THREE.TextureLoader().load('../img/earth.jpg');
 
 const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(5,50,50), 
-    new THREE.MeshBasicMaterial({
-        map: texture
+    new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+            globeTexture: {
+                value: texture
+            }
+        }
     })
 ) 
 
