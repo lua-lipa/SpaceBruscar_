@@ -35,11 +35,11 @@ camera.position.z = 3
 function calcPosFromLatLonRad(lat, lon, height) {
     var phi = (90 - lat) * (Math.PI / 180)
     var theta = (lon + 180) * (Math.PI / 180)
-    var heigth = (lon + 180) * (Math.PI / 180)
+    height = height / 500
 
-    let x = -(Math.sin(phi) * Math.cos(theta))
-    let z = (Math.sin(phi) * Math.sin(theta))
-    let y = (Math.cos(phi))
+    let x = -(height * Math.sin(phi) * Math.cos(theta))
+    let z = (height * Math.sin(phi) * Math.sin(theta))
+    let y = (height * Math.cos(phi))
 
     return { x, y, z }
 }
@@ -103,12 +103,12 @@ loader.load(
                 var longitudeDeg = satellite.degreesLong(tlePos.longitude),
                     latitudeDeg = satellite.degreesLat(tlePos.latitude);
 
-                console.log(latitudeDeg)
-
                 satrecs.push({
                     "satrec": satrec,
                     "mesh": mesh
                 })
+
+                console.log(tlePos.height)
 
                 let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
 
