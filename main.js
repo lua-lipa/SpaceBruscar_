@@ -23,9 +23,12 @@ document.body.appendChild(renderer.domElement)
 
 const controls = new OrbitControls(camera, renderer.domElement);
 
+const radius = 10
+const radiusKm = 6371
+
 const texture = new THREE.TextureLoader().load('../img/earth.jpg');
 const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 30, 30),
+    new THREE.SphereGeometry(radius, 50, 50),
     new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
@@ -38,23 +41,28 @@ const sphere = new THREE.Mesh(
 )
 
 scene.add(sphere)
-camera.position.z = 3
+camera.position.z = 20
 
 function calcPosFromLatLonRad(lat, lon, height) {
     var phi = (90 - lat) * (Math.PI / 180)
     var theta = (lon + 180) * (Math.PI / 180)
-    height = height / 500
+    height = radius + ((radius / radiusKm) * height)
 
-    let x = -(height * Math.sin(phi) * Math.cos(theta))
-    let z = (height * Math.sin(phi) * Math.sin(theta))
-    let y = (height * Math.cos(phi))
+    //(10/6371) * height
+    let x = -(height) * (Math.sin(phi) * Math.cos(theta))
+    let z = (height) * (Math.sin(phi) * Math.sin(theta))
+    let y = (height) * (Math.cos(phi))
+
+    // var x = -(radius + heigth) * Math.cos(phi) * Math.cos(theta);
+    // var y = (radius + heigth) * Math.sin(phi);
+    // var z = (radius + heigth) * Math.cos(phi) * Math.sin(theta);
 
     return { x, y, z }
 }
 
 //red markers
 let mesh = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(0.01, 10, 10),
+    new THREE.SphereBufferGeometry(6371 / 50, 20, 20),
     new THREE.MeshBasicMaterial({ color: 0xff0000 })
 )
 
@@ -84,51 +92,59 @@ loader.load(
     function(data) {
         // output the text to the console
         //console.log(data)
-        var line = data.split('\n')
+        var lines = data.split('\n')
+        console.log(lines)
         var count = 0
-        line.forEach(line => {
+        var lineCount = 0
+        lines.forEach(line => {
+
             if (line[0] == "1") {
                 tle[count] = {}
                 tle[count][0] = line
             } else if (line[0] == "2") {
-                tle[count][1] = line
+                try {
+                    tle[count][1] = line
 
 
-                const satrec = satellite.twoline2satrec(
-                    tle[count][0], tle[count][1]
-                )
+                    const satrec = satellite.twoline2satrec(
+                        tle[count][0], tle[count][1]
+                    )
 
-                const date = new Date()
-                const positionAndVelocity = satellite.propagate(satrec, date)
-                const gmst = satellite.gstime(date)
-                const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
+                    const date = new Date()
+                    const positionAndVelocity = satellite.propagate(satrec, date)
+                    const gmst = satellite.gstime(date)
+                    const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
 
-                let mesh = new THREE.Mesh(
-                    new THREE.SphereBufferGeometry(0.01, 10, 10),
-                    new THREE.MeshBasicMaterial({ color: 0xff0000 })
-                )
+                    let mesh = new THREE.Mesh(
+                        new THREE.SphereBufferGeometry(0.05, 10, 10),
+                        new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                    )
 
-                var longitudeDeg = satellite.degreesLong(tlePos.longitude),
-                    latitudeDeg = satellite.degreesLat(tlePos.latitude);
+                    var longitudeDeg = satellite.degreesLong(tlePos.longitude),
+                        latitudeDeg = satellite.degreesLat(tlePos.latitude);
 
-                satrecs.push({
-                    "satrec": satrec,
-                    "mesh": mesh
-                })
+                    satrecs.push({
+                        "satrec": satrec,
+                        "mesh": mesh
+                    })
 
-                console.log(tlePos.height)
 
-                let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
+                    let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
 
-                mesh.position.set(pos.x, pos.y, pos.z)
+                    mesh.position.set(pos.x, pos.y, pos.z)
 
-                scene.add(mesh)
+                    scene.add(mesh)
 
-                count++
+                    count++
+                } catch (error) {
+                    console.log(error)
+                }
+
+
             }
+            lineCount++
+            console.log(lineCount)
         })
-
-
     },
 
     // onProgress callback
