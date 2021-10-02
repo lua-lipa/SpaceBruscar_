@@ -61,6 +61,36 @@ let mexico = {
 //let pos = convertLatLngToCartesian(point1)
 let pos = calcPosFromLatLonRad(mexico.lat, mexico.lng)
 
+const loader = new THREE.FileLoader();
+
+//load a text file and output the result to the console
+var tle = []
+loader.load(
+    // resource URL
+    'starlink.tle',
+
+    // onLoad callback
+    function(data) {
+        // output the text to the console
+        //console.log(data)
+        var line = data.split('\n')
+        var count = 0
+        line.forEach(line => {
+
+        })
+    },
+
+    // onProgress callback
+    function(xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    },
+
+    // onError callback
+    function(err) {
+        console.error('An error happened');
+    }
+);
+
 console.log(pos.x)
 mesh.position.set(pos.x, pos.y, pos.z)
 
