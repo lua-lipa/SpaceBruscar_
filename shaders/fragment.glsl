@@ -10,6 +10,5 @@ void main() {
             Fragment shader, we set UV in here
             https://threejs.org/docs/#api/en/renderers/webgl/WebGLProgram
     */
-    texture2D(globeTexture, vertexUV);
     gl_FragColor = texture2D(globeTexture, vertexUV);
 }
