@@ -16,3 +16,6 @@ https://vitejs.dev/guide/#scaffolding-your-first-vite-project
 
 7. npm run dev
 8. http://localhost:3000/
+
+
+fragment.glsl : https://thebookofshaders.com/glossary/?search=texture2D
