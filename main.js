@@ -2,9 +2,6 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as satellite from 'satellite.js';
 
-import vertexShader from './shaders/vertex.glsl'
-import fragmentShader from './shaders/fragment.glsl'
-console.log(fragmentShader)
 const scene = new THREE.Scene()
 const camera = new THREE.
 PerspectiveCamera(
@@ -27,14 +24,8 @@ const texture = new THREE.TextureLoader().load('../img/earth.jpg');
 
 const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(1, 30, 30),
-    new THREE.ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        uniforms: {
-            globeTexture: {
-                value: texture
-            }
-        }
+    new THREE.MeshBasicMaterial({
+        map: texture
     })
 )
 
@@ -76,6 +67,7 @@ const loader = new THREE.FileLoader();
 
 //load a text file and output the result to the console
 var tle = []
+var satrecs = []
 loader.load(
     // resource URL
     'starlink.tle',
@@ -108,9 +100,17 @@ loader.load(
                     new THREE.MeshBasicMaterial({ color: 0xff0000 })
                 )
 
-                console.log(tlePos.longitude)
+                var longitudeDeg = satellite.degreesLong(tlePos.longitude),
+                    latitudeDeg = satellite.degreesLat(tlePos.latitude);
 
-                let pos = calcPosFromLatLonRad(tlePos.latitude, tlePos.longitude, tlePos.height)
+                console.log(latitudeDeg)
+
+                satrecs.push({
+                    "satrec": satrec,
+                    "mesh": mesh
+                })
+
+                let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
 
                 mesh.position.set(pos.x, pos.y, pos.z)
 
@@ -134,7 +134,22 @@ loader.load(
     }
 );
 
+function updateSatRecs() {
+    for (var i = 0; i < satrecs.length; i++) {
+        let satrec = satrecs[i]["satrec"];
+        let mesh = satrecs[i]["mesh"]
 
+        const date = new Date()
+        const positionAndVelocity = satellite.propagate(satrec, date)
+        const gmst = satellite.gstime(date)
+        const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
+
+        var longitudeDeg = satellite.degreesLong(tlePos.longitude),
+            latitudeDeg = satellite.degreesLat(tlePos.latitude);
+        let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
+        mesh.position.set(pos.x, pos.y, pos.z)
+    }
+}
 
 
 // mesh.position.set(pos.x, pos.y, pos.z)
@@ -145,6 +160,7 @@ loader.load(
 
 function animate() {
     controls.update()
+    updateSatRecs()
     renderer.render(scene, camera)
     requestAnimationFrame(animate)
 }
