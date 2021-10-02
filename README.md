@@ -14,4 +14,5 @@ https://vitejs.dev/guide/#scaffolding-your-first-vite-project
 5. npm install --save three
 6. npm install --save-dev vite-plugin-string
 
-
+7. npm run dev
+8. http://localhost:3000/
