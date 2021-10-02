@@ -1,3 +1,7 @@
+ varying vec2 vertexUV; // UV passed into fragment shader
+
  void main() {
-     gl_Position = vec4(position 1);
+     //set it as vertex shader runs
+     vertexUV = uv;
+     gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
  }
