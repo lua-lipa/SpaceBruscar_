@@ -134,7 +134,7 @@ loader.load(
                     const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
 
                     let mesh = new THREE.Mesh(
-                        new THREE.SphereBufferGeometry(0.05, 10, 10),
+                        new THREE.SphereBufferGeometry(0.025, 10, 10),
                         new THREE.MeshBasicMaterial({ color: 0xff0000 })
                     )
 
