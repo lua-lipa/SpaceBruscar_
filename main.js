@@ -102,7 +102,6 @@ const loader = new THREE.FileLoader();
 //load a text file and output the result to the console
 var tle = []
 var satrecs = []
-var particles = new THREE.BufferGeometry()
 
 function loadTleFile(fileName) {
     loader.load(
@@ -117,6 +116,8 @@ function loadTleFile(fileName) {
             console.log(lines)
             var count = 0
             var lineCount = 0
+
+            var vertices = []
             lines.forEach(line => {
 
                 if (line[0] == "1") {
@@ -138,25 +139,31 @@ function loadTleFile(fileName) {
 
 
 
-                        let mesh = new THREE.Mesh(
-                            new THREE.SphereBufferGeometry(0.025, 10, 10),
-                            new THREE.MeshBasicMaterial({ color: 0xff0000 })
-                        )
+
 
                         var longitudeDeg = satellite.degreesLong(tlePos.longitude),
                             latitudeDeg = satellite.degreesLat(tlePos.latitude);
+
+                        let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
+
+                        // let mesh = new THREE.Mesh(
+                        //     new THREE.SphereBufferGeometry(0.025, 10, 10),
+                        //     new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                        // )
+
+                        //mesh.position.set(pos.x, pos.y, pos.z)
+
+                        //scene.add(mesh)
+
+                        vertices.push(pos.x)
+                        vertices.push(pos.y)
+                        vertices.push(pos.z)
+
 
                         satrecs.push({
                             "satrec": satrec,
                             "mesh": mesh
                         })
-
-
-                        let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
-
-                        mesh.position.set(pos.x, pos.y, pos.z)
-
-                        scene.add(mesh)
 
                         count++
                     } catch (error) {
@@ -165,9 +172,23 @@ function loadTleFile(fileName) {
 
 
                 }
-                lineCount++
-                console.log(lineCount)
             })
+
+            //particles
+            var posArray = new Float32Array(vertices.length * 3)
+            for (let i = 0; i < vertices.length * 3; i++) {
+                posArray[i] = vertices[i]
+            }
+
+            var particlesGeometry = new THREE.BufferGeometry()
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+
+            const material = new THREE.PointsMaterial({
+                size: 0.1
+            })
+
+            var particlesMesh = new THREE.Points(particlesGeometry, material)
+            scene.add(particlesMesh)
         },
 
         // onProgress callback
