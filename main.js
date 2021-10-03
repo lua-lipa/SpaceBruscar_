@@ -103,6 +103,9 @@ const loader = new THREE.FileLoader();
 var tle = []
 var satrecs = []
 
+var particlesGeometry = new THREE.BufferGeometry()
+var particlePositions
+
 function loadTleFile(fileName) {
     loader.load(
         // resource URL
@@ -136,10 +139,6 @@ function loadTleFile(fileName) {
                         const positionAndVelocity = satellite.propagate(satrec, date)
                         const gmst = satellite.gstime(date)
                         const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
-
-
-
-
 
                         var longitudeDeg = satellite.degreesLong(tlePos.longitude),
                             latitudeDeg = satellite.degreesLat(tlePos.latitude);
@@ -180,11 +179,13 @@ function loadTleFile(fileName) {
                 posArray[i] = vertices[i]
             }
 
-            var particlesGeometry = new THREE.BufferGeometry()
+
             particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+            particlePositions = particlesGeometry.attributes.position
 
             const material = new THREE.PointsMaterial({
-                size: 0.1
+                size: 0.1,
+                color: 0xff0000
             })
 
             var particlesMesh = new THREE.Points(particlesGeometry, material)
@@ -207,20 +208,39 @@ loadTleFile("full.tle")
 
 
 function updateSatRecs() {
-    for (var i = 0; i < satrecs.length; i++) {
-        let satrec = satrecs[i]["satrec"];
-        let mesh = satrecs[i]["mesh"]
+    try {
+        var posArray = particlesGeometry.attributes.position.array
+        particlesGeometry.attributes.position.needsUpdate = true
+        let count = 3;
+        for (var i = 0; i < satrecs.length; i++) {
+            let satrec = satrecs[i]["satrec"];
+            let mesh = satrecs[i]["mesh"]
 
-        const date = new Date()
-        const positionAndVelocity = satellite.propagate(satrec, date)
-        const gmst = satellite.gstime(date)
-        const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
+            const date = new Date()
+            const positionAndVelocity = satellite.propagate(satrec, date)
+            const gmst = satellite.gstime(date)
+            const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
 
-        var longitudeDeg = satellite.degreesLong(tlePos.longitude),
-            latitudeDeg = satellite.degreesLat(tlePos.latitude);
-        let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
-        mesh.position.set(pos.x, pos.y, pos.z)
+            var longitudeDeg = satellite.degreesLong(tlePos.longitude),
+                latitudeDeg = satellite.degreesLat(tlePos.latitude);
+            let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
+
+
+            if (count == 3) {
+                posArray[i] = pos.x
+                posArray[i + 1] = pos.y
+                posArray[i + 2] = pos.z
+                count = 0
+            }
+            count++
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+                // mesh.position.set(pos.x, pos.y, pos.z)
+        }
+    } catch (error) {
+        console.log(error)
     }
+
 }
 
 
