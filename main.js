@@ -102,79 +102,88 @@ const loader = new THREE.FileLoader();
 //load a text file and output the result to the console
 var tle = []
 var satrecs = []
-loader.load(
-    // resource URL
-    'starlink.tle',
+var particles = new THREE.BufferGeometry()
 
-    // onLoad callback
-    function(data) {
-        // output the text to the console
-        //console.log(data)
-        var lines = data.split('\n')
-        console.log(lines)
-        var count = 0
-        var lineCount = 0
-        lines.forEach(line => {
+function loadTleFile(fileName) {
+    loader.load(
+        // resource URL
+        fileName,
 
-            if (line[0] == "1") {
-                tle[count] = {}
-                tle[count][0] = line
-            } else if (line[0] == "2") {
-                try {
-                    tle[count][1] = line
+        // onLoad callback
+        function(data) {
+            // output the text to the console
+            //console.log(data)
+            var lines = data.split('\n')
+            console.log(lines)
+            var count = 0
+            var lineCount = 0
+            lines.forEach(line => {
 
-
-                    const satrec = satellite.twoline2satrec(
-                        tle[count][0], tle[count][1]
-                    )
-
-                    const date = new Date()
-                    const positionAndVelocity = satellite.propagate(satrec, date)
-                    const gmst = satellite.gstime(date)
-                    const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
-
-                    let mesh = new THREE.Mesh(
-                        new THREE.SphereBufferGeometry(0.025, 10, 10),
-                        new THREE.MeshBasicMaterial({ color: 0xff0000 })
-                    )
-
-                    var longitudeDeg = satellite.degreesLong(tlePos.longitude),
-                        latitudeDeg = satellite.degreesLat(tlePos.latitude);
-
-                    satrecs.push({
-                        "satrec": satrec,
-                        "mesh": mesh
-                    })
+                if (line[0] == "1") {
+                    tle[count] = {}
+                    tle[count][0] = line
+                } else if (line[0] == "2") {
+                    try {
+                        tle[count][1] = line
 
 
-                    let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
+                        const satrec = satellite.twoline2satrec(
+                            tle[count][0], tle[count][1]
+                        )
 
-                    mesh.position.set(pos.x, pos.y, pos.z)
+                        const date = new Date()
+                        const positionAndVelocity = satellite.propagate(satrec, date)
+                        const gmst = satellite.gstime(date)
+                        const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
 
-                    scene.add(mesh)
 
-                    count++
-                } catch (error) {
-                    console.log(error)
+
+                        let mesh = new THREE.Mesh(
+                            new THREE.SphereBufferGeometry(0.025, 10, 10),
+                            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                        )
+
+                        var longitudeDeg = satellite.degreesLong(tlePos.longitude),
+                            latitudeDeg = satellite.degreesLat(tlePos.latitude);
+
+                        satrecs.push({
+                            "satrec": satrec,
+                            "mesh": mesh
+                        })
+
+
+                        let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
+
+                        mesh.position.set(pos.x, pos.y, pos.z)
+
+                        scene.add(mesh)
+
+                        count++
+                    } catch (error) {
+                        console.log(error)
+                    }
+
+
                 }
+                lineCount++
+                console.log(lineCount)
+            })
+        },
 
+        // onProgress callback
+        function(xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
 
-            }
-            lineCount++
-            console.log(lineCount)
-        })
-    },
+        // onError callback
+        function(err) {
+            console.error('An error happened');
+        }
+    );
+}
 
-    // onProgress callback
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
+loadTleFile("full.tle")
 
-    // onError callback
-    function(err) {
-        console.error('An error happened');
-    }
-);
 
 function updateSatRecs() {
     for (var i = 0; i < satrecs.length; i++) {
