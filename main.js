@@ -24,10 +24,10 @@ renderer.setPixelRatio(window.devicePixelRatio)
 document.body.appendChild(renderer.domElement)
 
 const controls = new OrbitControls(camera, renderer.domElement);
-
-const radius = 10
 const radiusKm = 6371
+const radius = 10
 
+// create custom earth texture for the sphere
 const texture = new THREE.TextureLoader().load('../img/earth.jpg');
 const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(radius, 50, 50),
@@ -42,7 +42,6 @@ const sphere = new THREE.Mesh(
     })
 )
 
-scene.add(sphere)
 
 const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(radius, 50, 50),
@@ -53,10 +52,13 @@ const atmosphere = new THREE.Mesh(
         side: THREE.BackSide
     })
 )
-
+    
+// atmosphere is smaller than current sphere - change
 atmosphere.scale.set(1.1, 1.1, 1.1)
-
+    
 scene.add(atmosphere)
+scene.add(sphere)
+
 camera.position.z = 20
 
 function calcPosFromLatLonRad(lat, lon, height) {
@@ -64,36 +66,12 @@ function calcPosFromLatLonRad(lat, lon, height) {
     var theta = (lon + 180) * (Math.PI / 180)
     height = radius + ((radius / radiusKm) * height)
 
-    //(10/6371) * height
     let x = -(height) * (Math.sin(phi) * Math.cos(theta))
     let z = (height) * (Math.sin(phi) * Math.sin(theta))
     let y = (height) * (Math.cos(phi))
 
-    // var x = -(radius + heigth) * Math.cos(phi) * Math.cos(theta);
-    // var y = (radius + heigth) * Math.sin(phi);
-    // var z = (radius + heigth) * Math.cos(phi) * Math.sin(theta);
-
     return { x, y, z }
 }
-
-//red markers
-let mesh = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(6371 / 50, 20, 20),
-    new THREE.MeshBasicMaterial({ color: 0xff0000 })
-)
-
-// let point1 = {
-//     lat: 50.4501,
-//     lng: 30.5234
-// }
-
-// let mexico = {
-//     lat: 32.1656,
-//     lng: -82.9001
-// }
-
-// //let pos = convertLatLngToCartesian(point1)
-// let pos = calcPosFromLatLonRad(mexico.lat, mexico.lng)
 
 const loader = new THREE.FileLoader();
 
@@ -107,7 +85,7 @@ loader.load(
     // onLoad callback
     function(data) {
         // output the text to the console
-        //console.log(data)
+        // console.log(data)
         var lines = data.split('\n')
         console.log(lines)
         var count = 0
@@ -120,7 +98,6 @@ loader.load(
             } else if (line[0] == "2") {
                 try {
                     tle[count][1] = line
-
 
                     const satrec = satellite.twoline2satrec(
                         tle[count][0], tle[count][1]
@@ -144,7 +121,6 @@ loader.load(
                         "mesh": mesh
                     })
 
-
                     let pos = calcPosFromLatLonRad(latitudeDeg, longitudeDeg, tlePos.height)
 
                     mesh.position.set(pos.x, pos.y, pos.z)
@@ -155,8 +131,6 @@ loader.load(
                 } catch (error) {
                     console.log(error)
                 }
-
-
             }
             lineCount++
             console.log(lineCount)
@@ -190,13 +164,6 @@ function updateSatRecs() {
         mesh.position.set(pos.x, pos.y, pos.z)
     }
 }
-
-
-// mesh.position.set(pos.x, pos.y, pos.z)
-
-//mesh.position.set(1, 0, 0)
-
-// scene.add(mesh)
 
 function animate() {
     controls.update()
