@@ -19,11 +19,14 @@ PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 })
+
 renderer.setSize(innerWidth, innerHeight)
 renderer.setPixelRatio(window.devicePixelRatio)
 document.body.appendChild(renderer.domElement)
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true
+
 const radiusKm = 6371
 const radius = 10
 
@@ -41,7 +44,6 @@ const sphere = new THREE.Mesh(
         }
     })
 )
-
 
 const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(radius, 50, 50),
@@ -84,8 +86,6 @@ loader.load(
 
     // onLoad callback
     function(data) {
-        // output the text to the console
-        // console.log(data)
         var lines = data.split('\n')
         console.log(lines)
         var count = 0
@@ -109,7 +109,7 @@ loader.load(
                     const tlePos = satellite.eciToGeodetic(positionAndVelocity.position, gmst)
 
                     let mesh = new THREE.Mesh(
-                        new THREE.SphereBufferGeometry(0.05, 10, 10),
+                        new THREE.SphereBufferGeometry(0.025, 10, 10),
                         new THREE.MeshBasicMaterial({ color: 0xff0000 })
                     )
 
