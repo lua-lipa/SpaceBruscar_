@@ -49,7 +49,7 @@ window.addEventListener('resize', () => {
 const radius = 10
 const radiusKm = 6371
 
-const texture = new THREE.TextureLoader().load('../img/earth.jpg');
+const texture = new THREE.TextureLoader().load('../assets/earth.jpg');
 const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(radius, 50, 50),
     new THREE.ShaderMaterial({
@@ -223,7 +223,7 @@ function loadTleFile(fileName) {
     );
 }
 
-loadTleFile("full.tle")
+loadTleFile("../assets/full.tle")
 
 
 function updateSatRecs() {
