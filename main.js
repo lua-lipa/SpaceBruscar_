@@ -14,6 +14,7 @@ PerspectiveCamera(
     1000
 )
 
+
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 })
@@ -22,6 +23,7 @@ renderer.setPixelRatio(window.devicePixelRatio)
 document.body.appendChild(renderer.domElement)
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true
 
 const radius = 10
 const radiusKm = 6371
